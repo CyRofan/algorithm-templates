@@ -36,6 +36,7 @@
 
 - `math/div.cpp`：向下取整除法 / 向上取整除法
 - `math/fft.cpp`：快速傅里叶变换
+- `math/ntt.cpp`：快速数论变换
 - `math/fwt-or.cpp`：FWT（OR 卷积）
 - `math/gauss-jordan-elimination.cpp`：Gauss-Jordan 消元
 

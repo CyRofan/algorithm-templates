@@ -1,61 +1,69 @@
-const int N = 4e6 + 10;
-const double PI = acos(-1);
+using CD = complex<double>;
 
-struct Complex
+class FFTPolyMul
 {
-    double x, y;
-    Complex operator + (const Complex &t) const
+private:
+    static constexpr double PI = acos(-1.0);
+    int tot = 1;
+    vector<int> rev = {0};
+
+    void init(int need)
     {
-        return {x + t.x, y + t.y};
-    }
-    Complex operator - (const Complex &t) const
-    {
-        return {x - t.x, y - t.y};
-    }
-    Complex operator * (const Complex &t) const
-    {
-        return {x * t.x - y * t.y, x * t.y + y * t.x};
+        int bit = 0, new_tot = 1;
+        while (new_tot < need)
+            new_tot <<= 1, bit ++ ;
+
+        if (new_tot == tot) return;
+
+        tot = new_tot;
+        rev.assign(tot, 0);
+        if (tot == 1) return;
+
+        for (int i = 0; i < tot; i ++ )
+            rev[i] = (rev[i >> 1] >> 1) | ((i & 1) << (bit - 1));
     }
 
-} a[N], b[N];
-
-int bit, tot;
-int rev[N], res[N];
-
-void fft(Complex a[], int inv)
-{
-    for (int i = 0; i < tot; i ++ )
+    void fft(vector<CD> &a, int inv) const
     {
-        if (i < rev[i])
-            swap(a[i], a[rev[i]]);  // 只需要交换一次就行了, 交换两次等于没有换
-    }
-    for (int mid = 1; mid < tot; mid <<= 1)
-    {
-        auto w1 = Complex({cos(PI / mid), inv * sin(PI / mid)});
-        for (int i = 0; i < tot; i += mid * 2)
+        for (int i = 0; i < tot; i ++ )
+            if (i < rev[i])
+                swap(a[i], a[rev[i]]);
+
+        for (int len = 1; len < tot; len <<= 1)
         {
-            auto wk = Complex({1, 0});  // 初始为w(0,mid), 定义为w(k,mid)
-            for (int j = 0; j < mid; j ++ , wk = wk * w1)  // 单位根递推式
+            CD w1(cos(PI / len), inv * sin(PI / len));
+            for (int i = 0; i < tot; i += (len << 1))
             {
-                auto x = a[i + j], y = wk * a[i + j + mid];
-                a[i + j] = x + y, a[i + j + mid] = x - y;
+                CD wk(1, 0);
+                for (int j = 0; j < len; j ++ , wk = wk * w1)
+                {
+                    CD x = a[i + j], y = wk * a[i + j + len];
+                    a[i + j] = x + y;
+                    a[i + j + len] = x - y;
+                }
             }
         }
     }
-}
 
-void workFFT(int n, int m)
-{   // a[0, n], b[0, m]
-    while ((1 << bit) < n + m + 1)
-        bit ++ ;
-    tot = 1 << bit;
-    for (int i = 0; i < tot; i ++ )
-        rev[i] = (rev[i >> 1] >> 1) | ((i & 1) << (bit - 1));
-    // 递推(bit<<1)在bit之前, 就已经被算出rev, 最后一位是否为1
-    fft(a, 1), fft(b, 1);
-    for (int i = 0; i < tot; i ++ )
-        a[i] = a[i] * b[i];  // 点表示法直接运算
-    fft(a, -1);  // 逆变换, 点表示法转换为多项式表示法
-    for (int i = 0; i <= n + m; i ++ )
-        res[i] = (int)(a[i].x / tot + 0.5);  // 向上去整
-}
+public:
+    vector<LL> mul(const vector<int> &A, const vector<int> &B)
+    {
+        int n = A.size(), m = B.size();
+        init(n + m - 1);
+
+        vector<CD> a(tot), b(tot);
+        for (int i = 0; i < n; i ++ ) a[i] = CD(A[i], 0);        
+        for (int i = 0; i < m; i ++ ) b[i] = CD(B[i], 0);
+
+        fft(a, 1);
+        fft(b, 1);
+        for (int i = 0; i < tot; i ++ )
+            a[i] = a[i] * b[i];
+        fft(a, -1);
+
+        vector<LL> ans(n + m - 1);
+        for (int i = 0; i < ans.size(); i ++ )
+            ans[i] = llround(a[i].real() / tot);
+        return ans;
+    }
+};
