@@ -1,3 +1,6 @@
+constexpr int P = 998244353;
+constexpr int G = 3;
+
 class NTTPolyMul
 {
 private:
