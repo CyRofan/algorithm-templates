@@ -30,7 +30,6 @@
 - `number-theory/linear-inv.cpp`：线性求逆元
 - `number-theory/sieve.cpp`：素数筛法
 - `number-theory/interval-sieve.cpp`：区间筛
-- `number-theory/linear-basis.cpp`：线性基
 
 ## 数学
 
@@ -39,6 +38,7 @@
 - `math/ntt.cpp`：快速数论变换
 - `math/fwt-or.cpp`：FWT（OR 卷积）
 - `math/gauss-jordan-elimination.cpp`：Gauss-Jordan 消元
+- `math/linear-basis.cpp`：线性基
 
 ## 计算几何
 
